@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Special Surprise</title>
-
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
+    <link
+        href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --primary-color: #ff4d6d;
@@ -25,21 +25,23 @@
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-            height: 100vh;
-            overflow: hidden;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
             color: var(--text-color);
         }
 
-        /* BACKGROUND */
+        /* Ambient Background Animations */
         .bg-shapes {
-            position: absolute;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
             z-index: 0;
+            pointer-events: none;
         }
 
         .shape {
@@ -49,135 +51,529 @@
             animation: float 20s infinite linear;
         }
 
-        .shape:nth-child(1) { width:150px;height:150px;top:10%;left:10%; }
-        .shape:nth-child(2) { width:200px;height:200px;bottom:20%;right:10%; }
-        .shape:nth-child(3) { width:100px;height:100px;top:40%;left:50%; }
-
-        @keyframes float {
-            0% {transform: translate(0,0);}
-            50% {transform: translate(20px,40px);}
-            100% {transform: translate(0,0);}
+        .shape:nth-child(1) {
+            width: 150px;
+            height: 150px;
+            top: 10%;
+            left: 10%;
+            animation-duration: 25s;
         }
 
-        /* GAME */
+        .shape:nth-child(2) {
+            width: 200px;
+            height: 200px;
+            bottom: 20%;
+            right: 10%;
+            animation-duration: 30s;
+        }
+
+        .shape:nth-child(3) {
+            width: 100px;
+            height: 100px;
+            top: 40%;
+            left: 50%;
+            animation-duration: 35s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            50% {
+                transform: translate(20px, 40px) rotate(180deg);
+            }
+
+            100% {
+                transform: translate(0, 0) rotate(360deg);
+            }
+        }
+
+        /* Game Container */
         #game-stage {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
             z-index: 10;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            transition: opacity 1s ease;
+            margin-bottom: 2rem;
+        }
+
+        #game-stage.hidden {
+            opacity: 0;
+            pointer-events: none;
+            display: none;
         }
 
         .instructions {
             background: var(--glass-bg);
-            padding: 2rem;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 2rem 1.5rem;
             border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
             margin-bottom: 2rem;
+            max-width: 90vw;
+            animation: fadeIn 1s ease-out;
         }
 
         .instructions h1 {
-            font-family: 'Dancing Script';
-            font-size: 2.5rem;
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(2rem, 6vw, 3rem);
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .instructions p {
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            line-height: 1.6;
         }
 
         .score-board {
-            margin-top: 10px;
-            font-weight: bold;
+            margin-top: 1rem;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            font-weight: 600;
             color: var(--primary-color);
         }
 
-        .hiding-spots-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            justify-content: center;
-        }
-
-        .hiding-spot {
-            font-size: 3rem;
+        /* Hidden Hearts */
+        .heart-target {
+            position: absolute;
+            font-size: 2.5rem;
+            color: #d62828;
             cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0.8;
+            filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.3));
+            animation: pulse-soft 3s infinite;
         }
 
-        /* ENVELOPE */
+        .heart-target:hover {
+            transform: scale(1.2);
+            color: #ff0000;
+        }
+
+        @keyframes pulse-soft {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Envelope Stage */
         #envelope-stage {
             display: none;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            width: 100%;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+        }
+
+        #envelope-stage.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        .envelope-container {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.5s ease;
+            max-width: 90vw;
+        }
+
+        .envelope-container:hover {
+            transform: scale(1.05);
         }
 
         .envelope {
-            width: 250px;
-            height: 150px;
-            background: var(--primary-color);
+            width: 100%;
+            max-width: 300px;
+            height: 200px;
+            background: #ff4d6d;
             border-radius: 10px;
             position: relative;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            transition: all 0.5s ease;
+            margin: 0 auto;
+        }
+
+        .flap {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-top: 110px solid #ff758f;
+            transform-origin: top;
+            transition: transform 0.6s ease 0.5s, z-index 0.2s;
+            z-index: 5;
+        }
+
+        .pocket {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-bottom: 200px solid #ff4d6d;
+            z-index: 3;
+        }
+
+        .letter-preview {
+            width: 260px;
+            height: 180px;
+            background: white;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 5px;
+            z-index: 2;
+            transition: transform 0.8s ease 1s;
+        }
+
+        .seal {
+            width: 40px;
+            height: 40px;
+            background: #d00000;
+            border-radius: 50%;
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ffcccb;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: opacity 0.5s ease;
+        }
+
+        /* Open state for envelope */
+        .envelope-container.open .flap {
+            transform: translateX(-50%) rotateX(180deg);
+            z-index: 1;
+        }
+
+        .envelope-container.open .seal {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .envelope-container.open .letter-preview {
+            transform: translateX(-50%) translateY(-100px);
+            z-index: 4;
         }
 
         .open-btn {
-            margin-top: 2rem;
-            padding: 10px 30px;
-            border: none;
-            border-radius: 30px;
+            margin-top: 3rem;
+            padding: 1rem 3rem;
             background: white;
             color: var(--primary-color);
+            border: none;
+            border-radius: 50px;
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 77, 109, 0.4);
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            max-width: 300px;
+            width: 100%;
         }
 
-        /* LETTER VIEW */
+        .open-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 77, 109, 0.6);
+            background: #fff0f3;
+        }
+
+        /* Full Letter View - NOW SCROLLABLE AND RESPONSIVE */
         #letter-view {
             position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 50;
             display: none;
             justify-content: center;
-            align-items: center;
-            padding: 20px;
+            align-items: flex-start;
+            padding: 2rem 1rem;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            overflow-y: auto;
         }
 
         #letter-view.active {
             display: flex;
+            opacity: 1;
         }
 
-        /* 🔥 FIX UTAMA DI SINI */
         .love-letter {
-            background: white;
+            background: #fff;
             width: 100%;
             max-width: 600px;
-
-            max-height: 80vh;
+            min-height: 80vh;
+            padding: clamp(2rem, 5vw, 3rem);
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            background-image: repeating-linear-gradient(white 0px, white 24px, #e9ecef 25px);
+            line-height: 28px;
+            transform: scale(0.9);
+            transition: transform 0.5s ease;
+            margin: 2rem auto;
+            max-height: 90vh;
             overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) rgba(255,255,255,0.5);
+        }
 
-            padding: 2rem;
+        #letter-view.active .love-letter {
+            transform: scale(1);
+        }
+
+        .love-letter::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .love-letter::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
             border-radius: 10px;
-            line-height: 1.6;
+        }
+
+        .love-letter::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+
+        .love-letter::-webkit-scrollbar-thumb:hover {
+            background: #ff3752;
         }
 
         .love-letter h2 {
-            text-align: center;
-            font-family: 'Dancing Script';
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(2rem, 6vw, 2.5rem);
             color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 2rem;
         }
 
         .love-letter p {
-            margin-top: 1rem;
-            font-family: 'Dancing Script';
-            font-size: 1.4rem;
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(1.3rem, 4vw, 1.6rem);
+            color: #333;
+            margin-bottom: 1.8rem;
+            line-height: 1.7;
+            text-align: justify;
         }
 
         .close-btn {
-            position: absolute;
+            position: sticky;
+            top: 20px;
             right: 20px;
-            top: 10px;
-            font-size: 20px;
+            font-size: 2rem;
             cursor: pointer;
+            color: #aaa;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        /* RESPONSIVE */
-        @media (max-width:480px){
-            .love-letter {
-                padding: 1.5rem;
-                max-height: 75vh;
+        .close-btn:hover {
+            color: var(--primary-color);
+            background: white;
+            transform: scale(1.1);
+        }
+
+        /* Sparkle animation for finding heart */
+        .sparkle {
+            position: absolute;
+            pointer-events: none;
+            animation: sparkleAnim 0.8s ease-out forwards;
+            font-size: 20px;
+            color: gold;
+        }
+
+        @keyframes sparkleAnim {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
             }
 
-            .love-letter p {
+            100% {
+                transform: scale(2) rotate(180deg);
+                opacity: 0;
+            }
+        }
+
+        /* Additional Styles for Hiding Spots */
+        .hiding-spots-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: clamp(1rem, 4vw, 2rem);
+            max-width: 90vw;
+            padding: 20px;
+            z-index: 15;
+            perspective: 1000px;
+            width: 100%;
+        }
+
+        .hiding-spot {
+            font-size: clamp(2.5rem, 8vw, 3.5rem);
+            cursor: pointer;
+            transition: transform 0.3s ease, opacity 0.3s;
+            position: relative;
+            user-select: none;
+            filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.1));
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+        }
+
+        .hiding-spot:hover {
+            transform: scale(1.1) translateY(-5px);
+        }
+
+        .hiding-spot.shaking {
+            animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+            color: #ccc;
+            cursor: default;
+        }
+
+        .hiding-spot.revealed {
+            animation: popOpen 0.5s ease forwards;
+            pointer-events: none;
+        }
+
+        .hidden-heart-popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: 2rem;
+            color: #ff0000;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .pop-anim {
+            animation: popHeart 1s ease forwards;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        @keyframes popOpen {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        @keyframes popHeart {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            50% { transform: translate(-50%, -150%) scale(2); opacity: 1; }
+            100% { transform: translate(-50%, -300%) scale(0); opacity: 0; }
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            #game-stage, #envelope-stage {
+                padding: 1rem;
+                min-height: auto;
+            }
+            
+            .hiding-spots-container {
+                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+                gap: 1rem;
+            }
+            
+            .hiding-spot {
+                min-height: 70px;
+                font-size: 2.5rem;
+            }
+            
+            .envelope {
+                max-width: 280px;
+                height: 180px;
+            }
+            
+            .love-letter {
+                margin: 1rem auto;
+                padding: 1.5rem;
+                min-height: 70vh;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .instructions {
+                padding: 1.5rem 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .open-btn {
+                padding: 0.8rem 2rem;
                 font-size: 1.2rem;
             }
         }
@@ -186,88 +582,174 @@
 
 <body>
 
-<div class="bg-shapes">
-    <div class="shape"></div>
-    <div class="shape"></div>
-    <div class="shape"></div>
-</div>
-
-<!-- GAME -->
-<div id="game-stage">
-    <div class="instructions">
-        <h1>Find My Heart</h1>
-        <p>Click 3 hearts ❤️</p>
-        <div class="score-board">Found: <span id="counter">0</span>/3</div>
+    <!-- Background Shapes -->
+    <div class="bg-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
     </div>
 
-    <div class="hiding-spots-container" id="spots"></div>
-</div>
+    <!-- Game Stage -->
+    <div id="game-stage">
+        <div class="instructions">
+            <h1>Find My Heart</h1>
+            <p>I've hidden 3 hearts inside these gifts and surprises.<br>Click them to find where my heart lies!</p>
+            <div class="score-board">Hearts Found: <span id="counter">0</span>/3</div>
+        </div>
 
-<!-- ENVELOPE -->
-<div id="envelope-stage">
-    <div class="envelope"></div>
-    <button class="open-btn" onclick="openLetter()">Open Me</button>
-</div>
-
-<!-- LETTER -->
-<div id="letter-view">
-    <div class="love-letter">
-        <span class="close-btn" onclick="closeLetter()">×</span>
-
-        <h2>My Dearest ❤️</h2>
-
-        <p>halloo sayanggg, akuu cumaa mauu ucapinn buatt kamuu yang hebat bgtt...</p>
-        <p>ingett gagal bukan akhirr dari segalanya...</p>
-        <p>semogaa hasill yang kamu dapatkan sesuaii impian kamuu yaa...</p>
-        <p>I Love You More ❤️</p>
-
+        <!-- Hiding Spots Container -->
+        <div class="hiding-spots-container">
+            <!-- Generated by JS -->
+        </div>
     </div>
-</div>
 
-<script>
-let count = 0;
+    <!-- Envelope Stage -->
+    <div id="envelope-stage">
+        <div class="envelope-container" id="envelope">
+            <div class="envelope">
+                <div class="pocket"></div>
+                <!-- The letter inside -->
+                <div class="letter-preview"></div>
+                <div class="flap"></div>
+                <div class="seal">❤️</div>
+            </div>
+        </div>
+        <button class="open-btn" onclick="openEnvelope()">Open Me</button>
+    </div>
 
-function init(){
-    const container = document.getElementById("spots");
+    <!-- Full Letter View -->
+    <div id="letter-view">
+        <div class="love-letter">
+            <button class="close-btn" onclick="closeLetter()">×</button>
+            <h2>My Dearest Valentine,</h2>
+            <p>halloo sayanggg, akuu cumaa mauu ucapinn buatt kamuu yang hebat bgtt udaa ngelewatin lika liku UTBK sampaii sejauh inii, semogaa lelahh yang diusahain kamuu inii berbuah maniss sepertii kamuu.</p>
+            <p>ingett gagal bukan akhirr dari segalanya, apapun hasilnya nanti kamuu harus bangga sama diri kamu sejauh ini, jangan pernah lupa untuk bersyukur, karena hidup bukan sekedar soal menang dan kalah tapii tentang siapa siapa yang selalu berdiri dan berani mencoba meski jalan yang dilaluinya tidak selalu mudah</p>
+            <p>semogaa hasill yang kamu dapatkan sesuaii impian kamuu yaa bbeyy, ingett akuu selaluu ada untukmu, aku juga akan selalu support kamuu.</p>
+            <p>I Love You More!! ❤️</p>
+            <p style="text-align: right;">- Yours forever</p>
+        </div>
+    </div>
 
-    for(let i=0;i<12;i++){
-        let el = document.createElement("div");
-        el.className="hiding-spot";
-        el.innerText="🎁";
+    <script>
+        let heartsFound = 0;
+        const totalHearts = 3;
 
-        el.onclick = ()=>{
-            if(el.clicked) return;
+        // Items to hide things in
+        const hidingItems = ['🎁', '🎁', '🎁', '🧸', '🧸', '💐', '💐', '☁️', '💌', '🍬', '🧁', '🌹'];
+        let spots = [];
 
-            el.clicked=true;
+        window.onload = function () {
+            initGame();
+        };
 
-            if(count<3){
-                el.innerText="❤️";
-                count++;
-                document.getElementById("counter").innerText=count;
+        function initGame() {
+            const container = document.querySelector('.hiding-spots-container');
+            // Shuffle items
+            hidingItems.sort(() => Math.random() - 0.5);
 
-                if(count===3){
-                    document.getElementById("game-stage").style.display="none";
-                    document.getElementById("envelope-stage").style.display="flex";
+            // Limit to maybe 12 items on screen for clean look
+            const displayItems = hidingItems.slice(0, 12);
+
+            // Pick 3 random indices to hold hearts
+            let heartIndices = new Set();
+            while (heartIndices.size < 3) {
+                heartIndices.add(Math.floor(Math.random() * displayItems.length));
+            }
+
+            displayItems.forEach((icon, index) => {
+                const spot = document.createElement('div');
+                spot.classList.add('hiding-spot');
+                spot.innerText = icon;
+                spot.dataset.hasHeart = heartIndices.has(index);
+                spot.onclick = () => checkSpot(spot);
+                container.appendChild(spot);
+                spots.push(spot);
+            });
+        }
+
+        function checkSpot(element) {
+            if (element.classList.contains('shaking') || element.classList.contains('revealed')) return;
+
+            if (element.dataset.hasHeart === "true") {
+                // FOUND HEART
+                element.classList.add('revealed');
+
+                // Show floating heart
+                const heart = document.createElement('div');
+                heart.classList.add('hidden-heart-popup', 'pop-anim');
+                heart.innerText = '❤️';
+                element.appendChild(heart);
+
+                // Sparkles at position
+                const rect = element.getBoundingClientRect();
+                createSparkles(rect.left + rect.width / 2, rect.top + rect.height / 2);
+
+                heartsFound++;
+                document.getElementById('counter').innerText = heartsFound;
+
+                if (heartsFound === totalHearts) {
+                    setTimeout(revealEnvelope, 1200);
                 }
-            }else{
-                el.innerText="❌";
+            } else {
+                // EMPTY
+                element.classList.add('shaking');
             }
         }
 
-        container.appendChild(el);
-    }
-}
+        function createSparkles(x, y) {
+            for (let i = 0; i < 8; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.classList.add('sparkle');
+                sparkle.innerText = '✨';
+                sparkle.style.left = (x + (Math.random() * 40 - 20)) + 'px';
+                sparkle.style.top = (y + (Math.random() * 40 - 20)) + 'px';
+                document.body.appendChild(sparkle);
+                setTimeout(() => sparkle.remove(), 800);
+            }
+        }
 
-function openLetter(){
-    document.getElementById("letter-view").classList.add("active");
-}
+        function revealEnvelope() {
+            const gameStage = document.getElementById('game-stage');
+            const envelopeStage = document.getElementById('envelope-stage');
 
-function closeLetter(){
-    document.getElementById("letter-view").classList.remove("active");
-}
+            gameStage.classList.add('hidden');
 
-init();
-</script>
+            setTimeout(() => {
+                gameStage.style.display = 'none';
+                envelopeStage.classList.add('visible');
+            }, 1000);
+        }
 
+        function openEnvelope() {
+            const envContainer = document.getElementById('envelope');
+            const letterView = document.getElementById('letter-view');
+            envContainer.classList.add('open');
+            setTimeout(() => {
+                letterView.classList.add('active');
+                createConfetti();
+            }, 1500);
+        }
+
+        function closeLetter() {
+            document.getElementById('letter-view').classList.remove('active');
+        }
+
+        function createConfetti() {
+            const colors = ['#ff4d6d', '#ff8fa3', '#fff', '#gold'];
+            for (let i = 0; i < 50; i++) {
+                const conf = document.createElement('div');
+                conf.style.position = 'fixed';
+                conf.style.left = Math.random() * 100 + 'vw';
+                conf.style.top = -10 + 'px';
+                conf.style.width = '10px';
+                conf.style.height = '10px';
+                conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.animation = `float ${Math.random() * 3 + 2}s linear forwards`;
+                document.body.appendChild(conf);
+                setTimeout(() => conf.remove(), 5000);
+            }
+        }
+    </script>
 </body>
+
 </html>
